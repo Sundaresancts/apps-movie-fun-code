@@ -10,7 +10,7 @@ resources:
   type: cf
   source:
     api: api.system.cumuluslabs.io        #<----- REPLACE ME
-    username: {{cf-user}}
+    username: sundaresan.kumbeswaran@cognizant.com
     password: {{cf-password}}
     organization: ksundaresan-pal    #<----- REPLACE ME
     space: sandbox         #<----- REPLACE ME
@@ -21,6 +21,7 @@ jobs:
   public: true
   plan:
   - get: moviefun
+    trigger: true
   - task: package
     file: moviefun/ci/tasks/package.yml
   - put: deploy-moviefun
