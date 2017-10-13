@@ -1,0 +1,32 @@
+---
+resources:
+- name: moviefun
+  type: git
+  source:
+    uri: https://github.com/Sundaresancts/apps-movie-fun-code   #<----- REPLACE ME
+    branch: master
+
+- name: deploy-moviefun
+  type: cf
+  source:
+    api: api.system.cumuluslabs.io        #<----- REPLACE ME
+    username: sundaresan.kumbeswaran@cognizant.com
+    password: b2fe5c10
+    organization: ksundaresan-pal    #<----- REPLACE ME
+    space: sandbox         #<----- REPLACE ME
+    skip_cert_check: true
+
+jobs:
+- name: build
+  public: true
+  plan:
+  - get: moviefun
+  - task: package
+    file: moviefun/ci/tasks/package.yml
+  - put: deploy-moviefun
+    params:
+      manifest: moviefun/manifest.yml
+      path: package-output/moviefun.war
+
+
+
