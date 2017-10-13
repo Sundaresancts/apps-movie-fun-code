@@ -10,8 +10,8 @@ resources:
   type: cf
   source:
     api: api.system.cumuluslabs.io        #<----- REPLACE ME
-    username: sundaresan.kumbeswaran@cognizant.com
-    password: b2fe5c10
+    username: {{cf-user}}
+    password: {{cf-password}}
     organization: ksundaresan-pal    #<----- REPLACE ME
     space: sandbox         #<----- REPLACE ME
     skip_cert_check: true
