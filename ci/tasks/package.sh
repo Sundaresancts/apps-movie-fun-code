@@ -4,7 +4,7 @@ set -e +x
 
 pushd moviefun
   echo "Packaging JAR"
-  mvn clean package -DskipTests
+  ./mvnw clean package -DskipTests
 popd
 
 jar_count=`find moviefun/target -type f -name *.jar | wc -l`
