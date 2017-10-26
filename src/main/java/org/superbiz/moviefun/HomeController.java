@@ -1,8 +1,13 @@
 package org.superbiz.moviefun;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.superbiz.moviefun.albums.Album;
 import org.superbiz.moviefun.albums.AlbumFixtures;
@@ -18,22 +23,19 @@ public class HomeController {
 
     private final MoviesBean moviesBean;
     private final AlbumsBean albumsBean;
-
     private final MovieFixtures movieFixtures;
     private final AlbumFixtures albumFixtures;
+    private PlatformTransactionManager movieTransactionManager;
+    private PlatformTransactionManager albumTransactionManager;
 
-    private final PlatformTransactionManager moviesTransactionManager;
-    private final PlatformTransactionManager albumsTransactionManager;
-
-    public HomeController(MoviesBean moviesBean, AlbumsBean albumsBean, MovieFixtures movieFixtures, AlbumFixtures albumFixtures, PlatformTransactionManager moviesTransactionManager, PlatformTransactionManager albumsTransactionManager) {
+    public HomeController(MoviesBean moviesBean, AlbumsBean albumsBean, MovieFixtures movieFixtures, AlbumFixtures albumFixtures, @Qualifier("movieTransactionManager") PlatformTransactionManager movieTransactionManager, @Qualifier("albumTransactionManager") PlatformTransactionManager albumTransactionManager) {
         this.moviesBean = moviesBean;
         this.albumsBean = albumsBean;
         this.movieFixtures = movieFixtures;
         this.albumFixtures = albumFixtures;
-        this.moviesTransactionManager = moviesTransactionManager;
-        this.albumsTransactionManager = albumsTransactionManager;
+        this.movieTransactionManager = movieTransactionManager;
+        this.albumTransactionManager = albumTransactionManager;
     }
-
 
     @GetMapping("/")
     public String index() {
@@ -42,8 +44,18 @@ public class HomeController {
 
     @GetMapping("/setup")
     public String setup(Map<String, Object> model) {
-        createMovies();
-        createAlbums();
+
+        movieSetup();
+
+        TransactionTemplate transactionTemplate = new TransactionTemplate(albumTransactionManager);
+        for (Album album : albumFixtures.load()) {
+            transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+                protected void doInTransactionWithoutResult(TransactionStatus status) {
+                    albumsBean.addAlbum(album);
+                }
+            });
+        }
+
 
         model.put("movies", moviesBean.getMovies());
         model.put("albums", albumsBean.getAlbums());
@@ -51,23 +63,12 @@ public class HomeController {
         return "setup";
     }
 
-    private void createAlbums() {
-        TransactionStatus transaction = albumsTransactionManager.getTransaction(null);
-
-        for (Album album : albumFixtures.load()) {
-            albumsBean.addAlbum(album);
-        }
-
-        albumsTransactionManager.commit(transaction);
-    }
-
-    private void createMovies() {
-        TransactionStatus transaction = moviesTransactionManager.getTransaction(null);
+    private void movieSetup(){
+        TransactionStatus status = movieTransactionManager.getTransaction(null);
 
         for (Movie movie : movieFixtures.load()) {
             moviesBean.addMovie(movie);
         }
-
-        moviesTransactionManager.commit(transaction);
+        movieTransactionManager.commit(status);
     }
 }

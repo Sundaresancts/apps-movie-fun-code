@@ -2,6 +2,15 @@ spring:
   mvc.view:
     prefix: /WEB-INF/
     suffix: .jsp
+  datasource:
+    hikari:
+      connection-timeout: 60000
+      maximum-pool-size: 5
+      type: com.zaxxer.hikari.HikariDataSource
+      jdbcUrl: jdbc:mysql://localhost:3306/movies?useSSL=false
+      url: jdbc:mysql://localhost:3306/movies?useSSL=false
+      username: root
+      password:
 
 moviefun:
   datasources:

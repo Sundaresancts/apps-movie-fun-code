@@ -43,9 +43,11 @@ public class MoviesBean {
         entityManager.merge(movie);
     }
 
+
     public void deleteMovie(Movie movie) {
         entityManager.remove(movie);
     }
+
 
     public void deleteMovieId(long id) {
         Movie movie = entityManager.find(Movie.class, id);
